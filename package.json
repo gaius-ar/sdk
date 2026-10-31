@@ -1,0 +1,35 @@
+{
+	"name": "@gaius-ar/sdk",
+	"version": "0.1.0",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"engines": {
+		"node": ">=22"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "rm -rf dist && bun build ./src/index.ts --target=node --format=esm --outfile=dist/index.js && tsc -p tsconfig.build.json",
+		"test": "bun test",
+		"typecheck": "bun check",
+		"gen": "orval",
+		"prepack": "bun run typecheck && bun run test && bun run build"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"orval": "^8.46.0",
+		"typescript": "^7"
+	}
+}
