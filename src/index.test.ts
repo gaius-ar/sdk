@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
-import { createGaiusClient } from ".";
+import { type CaseCreateInput, createGaiusClient, GaiusHttpError } from ".";
 
 const caseId = "00000000-0000-4000-8000-000000000001";
 
@@ -8,6 +8,46 @@ afterEach(() => {
 });
 
 describe("createGaiusClient", () => {
+	test("sends the low-level case timestamp intact without files or case type", async () => {
+		const body: CaseCreateInput = {
+			personType: "individual", firstName: "Ana", lastName: "Pérez",
+			idType: "DNI", idValue: "12345678", intakeChannel: "web",
+			intakeDate: "2026-10-30T15:30:00-03:00",
+			addressCity: null, addressState: null, addressStreet: null,
+			answers: null, documents: null, consultationReason: null,
+			email: null, phone: null, initialAccount: null,
+		};
+		const client = createGaiusClient({ apiKey: "test", fetch: async (input) => {
+			expect(await (input as Request).json()).toEqual(body);
+			return Response.json({ id: caseId });
+		}});
+		await client.postV1Case(body);
+	});
+
+	test("makes validation errors readable while preserving status and info", async () => {
+		const problem = { detail: "Validation failed", errors: [{
+			location: "body.intakeDate", message: "expected string to be RFC 3339 date-time",
+		}] };
+		const client = createGaiusClient({ apiKey: "test", fetch: async () =>
+			Response.json(problem, { status: 422 }) });
+		const error = await client.getV1CaseById(caseId).catch((error: unknown) => error);
+		expect(error).toBeInstanceOf(GaiusHttpError);
+		expect(error).toMatchObject({ status: 422, info: problem,
+			message: "HTTP 422: body.intakeDate: expected string to be RFC 3339 date-time" });
+	});
+
+	for (const [body, expected] of [
+		[JSON.stringify({ detail: "Permission denied" }), "HTTP 503: Permission denied"],
+		[JSON.stringify({ title: "Unavailable" }), "HTTP 503: Unavailable"],
+		["Upstream unavailable", "HTTP 503: Upstream unavailable"],
+		["", "HTTP 503"],
+	] as const) {
+		test(`formats HTTP failure body ${JSON.stringify(body)}`, async () => {
+			const client = createGaiusClient({ apiKey: "test", fetch: async () =>
+				new Response(body, { status: 503 }) });
+			await expect(client.getV1CaseById(caseId)).rejects.toMatchObject({ message: expected, status: 503 });
+		});
+	}
 	test("accepts a key string and uses the default URL and global fetch", async () => {
 		const data = { id: caseId };
 		const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(

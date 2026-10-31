@@ -184,6 +184,7 @@ describe("createCase", () => {
 			`/v1/case/${caseId}/confirm-uploads`,
 		]);
 		expect(f.calls[1]?.body).toMatchObject({
+			intakeDate: "2026-10-30T00:00:00Z",
 			answers: [
 				{ questionId, valueOptionIDs: null, valueFileName: "answer.pdf" },
 			],

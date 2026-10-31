@@ -40,6 +40,44 @@ const response = await gaius.getV1Case({
 console.log(response.data.items)
 ```
 
+## Create a case directly
+
+`postV1Case` sends the API body unchanged. Its `intakeDate` must be an RFC 3339
+date-time with a timezone, for example `2026-10-30T15:30:00-03:00` or
+`2026-10-30T00:00:00Z`. A date alone such as `2026-10-30` is rejected by the API.
+Here is a case without files or a case type (nullable fields required by the
+API schema are included explicitly):
+
+```ts
+const response = await gaius.postV1Case({
+  personType: 'individual',
+  firstName: 'Ana',
+  lastName: 'Pérez',
+  idType: 'DNI',
+  idValue: '12345678',
+  intakeChannel: 'web',
+  intakeDate: '2026-10-30T15:30:00-03:00',
+  addressCity: null,
+  addressState: null,
+  addressStreet: null,
+  answers: null,
+  documents: null,
+  consultationReason: null,
+  email: null,
+  phone: null,
+  initialAccount: null,
+})
+console.log(response.data.id)
+```
+
+In contrast, `createCase` accepts `intakeDate` as `YYYY-MM-DD` and converts it to
+midnight UTC (`2026-10-30` becomes `2026-10-30T00:00:00Z`).
+
+API failures throw `GaiusHttpError`, an `Error` with a readable `message`, numeric
+`status`, and `info` containing the parsed response body (or raw text for non-JSON
+responses). Validation errors include field paths, for example
+`HTTP 422: body.intakeDate: expected string to be RFC 3339 date-time`.
+
 ## Create a case with files
 
 `createCase` follows the frontend flow: validate form values against the current
