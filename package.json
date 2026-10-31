@@ -1,6 +1,6 @@
 {
 	"name": "@gaius-ar/sdk",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"main": "./dist/index.js",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -25,11 +25,15 @@
 		"test": "bun test",
 		"typecheck": "bun check",
 		"gen": "orval",
-		"prepack": "bun run typecheck && bun run test && bun run build"
+		"prepack": "bun run typecheck && bun run test && bun run build",
+		"sync:frontend": "bun scripts/sync-frontend.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
 		"orval": "^8.46.0",
 		"typescript": "^7"
+	},
+	"dependencies": {
+		"zod": "^4.6.5"
 	}
 }

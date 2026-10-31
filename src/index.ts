@@ -1,6 +1,13 @@
 import { getGaiusAPI } from "./api/api.js";
+import { caseCreator } from "./create-case.js";
 
 export * from "./api/model.js";
+export type {
+	CreateCaseInput,
+	CreateCaseOptions,
+	CreateCaseResult,
+} from "./create-case.js";
+export { CaseUploadError } from "./create-case.js";
 
 const DEFAULT_BASE_URL = "https://api.gaius.com.ar";
 
@@ -39,5 +46,7 @@ export function createGaiusClient(params: GaiusClientParams) {
 
 	const api = getGaiusAPI(authenticatedFetch as typeof globalThis.fetch);
 
-	return api as WithoutUrlHelpers<typeof api>;
+	return { ...api, createCase: caseCreator(api, fetchFn) } as WithoutUrlHelpers<
+		typeof api
+	> & { createCase: ReturnType<typeof caseCreator> };
 }

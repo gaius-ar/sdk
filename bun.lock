@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "@gaius-ar/sdk",
+      "dependencies": {
+        "zod": "^4.6.5",
+      },
       "devDependencies": {
         "@types/bun": "latest",
         "orval": "^8.46.0",
